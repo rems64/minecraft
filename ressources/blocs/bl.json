@@ -1,0 +1,23 @@
+[
+	{
+		"id": 1,
+		"name": "oaklog",
+		"display_name": "oak log",
+		"textures":{
+			"top": "ressources/textures/block/oak_log_top.png",
+			"front": "ressources/textures/block/oak_log.png",
+			"left": "ressources/textures/block/oak_log.png",
+			"back": "ressources/textures/block/oak_log.png",
+			"right": "ressources/textures/block/oak_log.png",
+			"bottom": "ressources/textures/block/oak_log_top.png"
+		}
+	},
+	{
+		"id": "2",
+		"name": "diamore",
+		"display_name": "diamond ore",
+		"textures":{
+			"all": "ressources/textures/block/diamond_ore.png"
+		}
+	}
+]
