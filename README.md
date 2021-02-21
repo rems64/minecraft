@@ -1,0 +1,1 @@
+Simple playground for OpenGL, with the goal of creating a minecraft-like game.

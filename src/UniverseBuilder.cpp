@@ -67,8 +67,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-	char a = 10;
-	std::cout << sizeof(a) << std::endl;
 	if (!glfwInit())
 	{
 		std::cout << "ERROR while initializing glfw" << std::endl;
@@ -125,8 +123,11 @@ int main()
 	dmanager.generateCubeVertexBuffer();
 	dmanager.loadBlocsList();
 
-	MC::Object obj;
+	MC::Object obj(&dmanager, "../../../Shaders/basic.glsl");
+	MC::Object obj2(&dmanager, "../../../Shaders/light.glsl");
+	//dmanager.loadObj(&obj, "../../../ressources/3dmodels/face-mask.obj");
 	dmanager.loadObj(&obj, "../../../ressources/3dmodels/face-mask.obj");
+	dmanager.loadObj(&obj2, "../../../ressources/3dmodels/light.obj");
 	//dmanager.loadObj(&obj, "../../../ressources/3dmodels/cube.obj");
 
 	MC::ProceduralTexture ptexture(10, 10, 123456789, 4);
@@ -134,12 +135,17 @@ int main()
 
 	MC::Texture texture;
 	//texture.loadPNG("../../../ressources/textures/block/diamond_ore.png", 3, false);
+	//texture.loadPNG("../../../ressources/3dmodels/FaceMask.png", 3, false);
 	texture.loadPNG("../../../ressources/3dmodels/FaceMask.png", 3, false);
+
+	MC::Texture texture2;
+	texture2.loadPNG("../../../ressources/3dmodels/Skull/Skull.png", 3, false);
 
 
 	MC::Texture normalTexture;
 	//texture.loadPNG("../../../ressources/textures/block/diamond_ore.png", 3, false);
-	normalTexture.loadPNG("../../../ressources/3dmodels/Skull/normal.png", 3, false);
+	//normalTexture.loadPNG("../../../ressources/3dmodels/Skull/normal.png", 3, false);
+	normalTexture.loadPNG("./ressources/3dmodels/Skull/normal.png", 3, false);
 	MC::Block dirt(&dmanager);
 
 	float sliderValue(0.5f);
@@ -154,14 +160,26 @@ int main()
 	float rotation(180);
 	float pos[3] = { 0.f, 0.f, 0.f };
 	float scale(1.f);
+
+	float rotation2(180);
+	float pos2[3] = { 0.f, 0.f, 0.f };
+	float scale2(1.f);
+
+	float lightpos[3] = { -1.f, -2.f, -0.7f };
+
+	glm::mat4 projection;
+	glm::mat4 view;
+	glm::mat4 position;
+	glm::mat4 model;
+	glm::mat4 MVPmatrix;
 	while (!glfwWindowShouldClose(window))
 	{
-		glm::mat4 projection = glm::perspective(glm::radians(60.f), 1.0f / 1.0f, 0.1f, 100.0f);
-		glm::mat4 view = glm::lookAt(glm::vec3(-4, -4, 1), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+		projection = glm::perspective(glm::radians(60.f), 1.0f, 0.1f, 100.0f);
+		view = glm::lookAt(glm::vec3(-4, -4, 1), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 
-		glm::mat4 position = glm::translate(glm::mat4(1.f), glm::vec3(pos[0], pos[1], pos[2]));
-		glm::mat4 model = position * glm::rotate(glm::mat4(1.f), glm::radians(rotation), glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.f), glm::vec3(0.5*scale, 0.5*scale, 0.5*scale));
-		glm::mat4 MVPmatrix = projection * view * model;
+		position = glm::translate(glm::mat4(1.f), glm::vec3(pos[0], pos[1], pos[2]));
+		model = position * glm::rotate(glm::mat4(1.f), glm::radians(rotation), glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.f), glm::vec3(0.5*scale, 0.5*scale, 0.5*scale));
+		MVPmatrix = projection * view * model;
 
 		glfwPollEvents();
 
@@ -193,6 +211,8 @@ int main()
 		//ImGui::SliderFloat3("position", pos, 0.f, 1.f);
 		ImGui::DragFloat3("position", pos, 0.1f);
 		ImGui::DragFloat("scale", &scale, 0.01f);
+
+		ImGui::DragFloat3("light position", lightpos, 0.1f);
 		ImGui::End();
 		
 
@@ -217,7 +237,13 @@ int main()
 		*/
 
 		//dirt.render(&MVPmatrix, &ptexture);
-		obj.render(&MVPmatrix, { &texture, &normalTexture });
+		obj.render(&MVPmatrix, &model, &view, lightpos, { &texture, &normalTexture });
+
+		position = glm::translate(glm::mat4(1.f), glm::vec3(lightpos[0], lightpos[1], lightpos[2]));
+		model = position;// * glm::rotate(glm::mat4(1.f), glm::radians(rotation2), glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.f), glm::vec3(0.5 * scale2, 0.5 * scale2, 0.5 * scale2));
+		MVPmatrix = projection * view * model;
+
+		obj2.render(&MVPmatrix, true);
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

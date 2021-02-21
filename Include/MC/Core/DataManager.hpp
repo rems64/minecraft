@@ -6,7 +6,6 @@
 #include <vector>
 #include <map>
 
-#include <external/json.hpp>
 #include <glm/common.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

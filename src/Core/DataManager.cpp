@@ -70,29 +70,7 @@ bool MC::DataManager::generateCubeVertexBuffer()
 
 bool MC::DataManager::loadBlocsList()
 {
-	std::ifstream i("../../../ressources/blocs/bl.json");
-	nlohmann::json jsn;
-	i >> jsn;
-
-	for (unsigned int i = 0; i < jsn.size() - 1; i++)
-	{
-		m_blocksList.insert(std::pair<unsigned int, MC::DataManager::blockStruct>(m_blocksList.size(), MC::DataManager::blockStruct
-			{
-				jsn[i]["id"],
-				jsn[i]["name"],
-				jsn[i]["display_name"],
-				BLOCKTYPE::SOLID,
-				{
-					MC::Texture(),
-					MC::Texture(),
-					MC::Texture(),
-					MC::Texture(),
-					MC::Texture(),
-					MC::Texture()
-				}
-			}
-		));
-	};
+	std::cout << "[ERROR] An error occured, please report error in load block list" << std::endl;
 	return true;
 }
 
@@ -177,7 +155,7 @@ void MC::DataManager::loadObj(MC::Object *object, std::string path)
 	std::vector<glm::vec3> doneIndices;
 	float* vertices = (float*)calloc((size_t)vIndicesVector.size() * 4, sizeof(float)); assert(vertices);
 	unsigned int* indices = (unsigned int*)calloc((size_t)vIndicesVector.size() / 3, sizeof(unsigned int)); assert(indices);
-	for (int i = 0; i < vIndicesVector.size() / 3; i++)
+	for (unsigned long i = 0; i < vIndicesVector.size() / 3; i++)
 	{
 		vertices[8 * i + 0] = verticesVector[(vIndicesVector[3 * i] - 1)*3+0];
 		vertices[8 * i + 1] = verticesVector[(vIndicesVector[3 * i] - 1)*3+1];

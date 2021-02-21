@@ -20,10 +20,11 @@ namespace MC
 	{
 	public:
 		Object();
-		Object(MC::DataManager* datamanager);
+		Object(MC::DataManager* datamanager, std::string shader);
 		~Object();
 
-		void render(glm::mat4* transMat, std::vector<MC::Texture*> textures);
+		void render(glm::mat4* transMat, glm::mat4* modelMat, glm::mat4* viewMat, float [], std::vector<MC::Texture*> textures);
+		void render(glm::mat4* transMat, bool twoSided);
 
 		MC::VertexBuffer* getVertexBuffer();
 		MC::VertexArray* getVertexArray();

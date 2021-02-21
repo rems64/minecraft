@@ -3,12 +3,11 @@
 #
 cmake_minimum_required (VERSION 3.8)
 set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
 
 project ("universeBuilder")
 
 include_directories( "Include/" "Include/external" "lib/ImGui" "Include/freetype" "lib/GLFW/include" "lib/GLEW/include" )
-
-find_package(imgui CONFIG)
 
 set(SRCS
 	"lib/ImGui/imgui.cpp"
@@ -38,8 +37,6 @@ set(SRCS
 	"src/Core/Object.cpp"
 )
 
-set(imgui_sources
-)
 
 set(imgui_headers
   "lib/ImGui/imconfig.h"

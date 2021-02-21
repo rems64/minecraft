@@ -131,6 +131,7 @@ void MC::Shader::setUniformMat4f(const std::string& name, const glm::mat4& matri
     GLCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
 }
 
+
 void MC::Shader::setUniformSampler2D(const std::string& name, const unsigned int* texture)
 {
 
