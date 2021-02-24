@@ -35,6 +35,7 @@ set(SRCS
 	"src/Core/Section.cpp"
 	"src/Graphics/ProceduralTexture.cpp"
 	"src/Core/Object.cpp"
+	"src/Core/Scene.cpp"
 )
 
 
@@ -60,13 +61,13 @@ set(imgui_headers
 find_package(OpengL REQUIRED COMPONENTS OpenGL)
 
 
-add_executable(output ${SRCS})
+add_executable(minecraft ${SRCS})
 
 #target_link_libraries(output nlohmann_json)
-target_link_libraries(output ./libs/GLFW/glfw3)
-target_link_libraries(output ./libs/GLEW/glew32)
-target_link_libraries(output ./libs/freetype/freetype)
-target_link_libraries(output OpenGL::GL)
+target_link_libraries(minecraft ./libs/GLFW/glfw3)
+target_link_libraries(minecraft ./libs/GLEW/glew32)
+target_link_libraries(minecraft ./libs/freetype/freetype)
+target_link_libraries(minecraft OpenGL::GL)
 
 file(COPY "./lib/GLFW/lib-vc2019/glfw3.lib" DESTINATION ${CMAKE_BINARY_DIR}/libs/GLFW/)
 file(COPY "./lib/GLFW/lib-vc2019/glfw3.dll" DESTINATION ${CMAKE_BINARY_DIR}/)

@@ -1,5 +1,5 @@
 #include <MC/Core/DataManager.hpp>
-
+#include <MC/Core/Scene.hpp>
 
 MC::DataManager::DataManager()
 {
@@ -74,7 +74,7 @@ bool MC::DataManager::loadBlocsList()
 	return true;
 }
 
-void MC::DataManager::loadObj(MC::Object *object, std::string path)
+MC::Object* MC::DataManager::loadObj(MC::Scene *scene, std::string path)
 {
 	std::stringstream ss;
 	std::fstream fileStream(path);
@@ -89,17 +89,26 @@ void MC::DataManager::loadObj(MC::Object *object, std::string path)
 	float* tmpFloat;
 	unsigned int* tmpInt;
 	//std::string* tempIndices;
+	std::string currentMaterial;
+	MC::Object* currentObject(nullptr);
 	while (std::getline(fileStream, line))
 	{
 		//std::cout << "LINE";
-
 		if (line[0] == '#')
 		{
 			continue;
 		}
 		else
 		{
-			if((line[0]=='v') & (line[1]==' '))
+			if (line.substr(0, 6) == "mtllib")
+			{
+				currentMaterial = line.substr(7, line.size() - 7);
+				std::cout << "[INFO] Current material : " << currentMaterial << std::endl;
+			}
+			else if (line.substr(0, 6) == "usemtl")
+			{
+			}
+			else if((line[0]=='v') & (line[1]==' '))
 			{
 				if (line.size() > 2)
 				{
@@ -139,19 +148,94 @@ void MC::DataManager::loadObj(MC::Object *object, std::string path)
 			{
 				int size = 0;
 				std::string* tempIndices = MC::parseString<std::string>(line.substr(2), " ", &size);
-				for (unsigned int i = 0; i < size+1; i++)
+				size+=1;
+				if(size == 3)
+					for (unsigned int i = 0; i < size; i++)
+					{
+						int size2 = 0;
+						unsigned int* tmp = MC::parseString<unsigned int>(tempIndices[i], "/", &size2);
+						vIndicesVector.push_back(tmp[0]);      // Push_back
+						vIndicesVector.push_back(tmp[1]);      // Push_back
+						vIndicesVector.push_back(tmp[2]);      // Push_back
+					}
+				else if(size == 4)
 				{
-					int size2=0;
-					unsigned int* tmp = MC::parseString<unsigned int>(tempIndices[i], "/", &size2);
+					unsigned int* tmp;
+					int size2 = 0;
+					for (unsigned int i = 0; i < 3; i++)
+					{
+						tmp = MC::parseString<unsigned int>(tempIndices[i], "/", &size2);
+						vIndicesVector.push_back(tmp[0]);      // Push_back
+						vIndicesVector.push_back(tmp[1]);      // Push_back
+						vIndicesVector.push_back(tmp[2]);      // Push_back
+					}
+					tmp = MC::parseString<unsigned int>(tempIndices[0], "/", &size2);
 					vIndicesVector.push_back(tmp[0]);      // Push_back
 					vIndicesVector.push_back(tmp[1]);      // Push_back
 					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[2], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[3], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+				}
+				else if (size == 5)
+				{
+					unsigned int* tmp;
+					int size2 = 0;
+					for (unsigned int i = 0; i < 3; i++)
+					{
+						tmp = MC::parseString<unsigned int>(tempIndices[i], "/", &size2);
+						vIndicesVector.push_back(tmp[0]);      // Push_back
+						vIndicesVector.push_back(tmp[1]);      // Push_back
+						vIndicesVector.push_back(tmp[2]);      // Push_back
+					}
+					tmp = MC::parseString<unsigned int>(tempIndices[0], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[2], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[4], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[4], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[2], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+					tmp = MC::parseString<unsigned int>(tempIndices[3], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+
+				}
+				else {
+					std::cout << "[ERROR] Wrong number of vertices per face : " << size << std::endl;
+					//return nullptr;
 				}
 			}
 		}
 	}
 
 	std::cout << "[INFO] PARSING DONE" << std::endl;
+	
 	std::vector<glm::vec3> doneIndices;
 	float* vertices = (float*)calloc((size_t)vIndicesVector.size() * 4, sizeof(float)); assert(vertices);
 	unsigned int* indices = (unsigned int*)calloc((size_t)vIndicesVector.size() / 3, sizeof(unsigned int)); assert(indices);
@@ -167,10 +251,15 @@ void MC::DataManager::loadObj(MC::Object *object, std::string path)
 		vertices[8 * i + 7] = uvsTemp[(vIndicesVector[3* i + 1] - 1)*2+1];
 		indices[i] = i;
 	};
+
+
 	//std::cout << vertices[0] << " | " << vertices[1] << " | " << vertices[2] << std::endl; assert(std::cout);
 	//std::cout << uvs[0] << " | " << uvs[1] << " | " << uvs[2] << std::endl; assert(std::cout);
 	//std::cout << vIndices[0] << " | " << vIndices[1] << " | " << vIndices[2] << " | " << vIndices[3] << " | " << vIndices[4] << std::endl; assert(std::cout);
 	//std::cout << ss.str() << std::endl;
+
+
+	MC::Object* object = new MC::Object(this, "../../../Shaders/basic.glsl");
 	object->getVertexBuffer()->setBuffer(vertices, vIndicesVector.size() * 4 * sizeof(float));
 
 	object->getIndexBuffer()->setBuffer(indices, vIndicesVector.size() / 3);
@@ -182,6 +271,9 @@ void MC::DataManager::loadObj(MC::Object *object, std::string path)
 	object->getVertexArray()->bind();
 	object->getVertexArray()->addBuffer(*(object->getVertexBuffer()), *(object->getVertexBufferLayout()));
 	object->getVertexArray()->unbind();
+	scene->addObjectToScene(object);
+
+	return currentObject;
 }
 
 MC::DataManager::blockStruct MC::DataManager::getBlock(unsigned int id)
@@ -199,6 +291,7 @@ MC::DataManager::blockStruct MC::DataManager::getBlock(unsigned int id)
 	std::cout << "[ERROR] Block can't be found (id=" << id << ")" << std::endl;
 	throw "[ERROR] An error occured at finding block from id";
 }
+
 
 template<typename T>
 T* MC::parseString<T>(std::string string, std::string delimiter, int* size)
@@ -323,4 +416,136 @@ std::string* MC::parseString<std::string>(std::string string, std::string delimi
 	}
 	liste[index] = (std::string)string;
 	return liste;
+}
+
+
+std::string MC::DataManager::openFile(const char* filter)
+{
+	OPENFILENAMEA ofn;
+	CHAR szFile[260] = { 0 };
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = glfwGetWin32Window();
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = filter;
+	ofn.nFilterIndex = 1;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+	if (GetOpenFileNameA(&ofn) == TRUE)
+	{
+		std::cout << ofn.lpstrFile << std::endl;
+		return ofn.lpstrFile;
+	};
+	return std::string();
+}
+
+void MC::DataManager::loadLight(MC::Scene* scene)
+{
+	std::stringstream ss;
+	std::fstream fileStream("../../../ressources/3dmodels/light.obj");
+	std::string line;
+	std::string end;
+
+	std::vector<float> verticesVector;
+	std::vector<float> uvsTemp;
+	std::vector<float> normalsTemp;
+	std::vector<unsigned int> vIndicesVector;
+
+	float* tmpFloat;
+	unsigned int* tmpInt;
+	//std::string* tempIndices;
+	while (std::getline(fileStream, line))
+	{
+		//std::cout << "LINE";
+
+		if (line[0] == '#')
+		{
+			continue;
+		}
+		else
+		{
+			if ((line[0] == 'v') & (line[1] == ' '))
+			{
+				if (line.size() > 2)
+				{
+					int size = 0;
+					tmpFloat = MC::parseString<float>(line.substr(2), " ", &size);
+					for (int i = 0; i < size + 1; i++)
+					{
+						verticesVector.push_back(tmpFloat[i]);
+					}
+				};
+			}
+			else if ((line[0] == 'v') & (line[1] == 't'))
+			{
+				if (line.size() > 2)
+				{
+					int size = 0;
+					tmpFloat = MC::parseString<float>(line.substr(3), " ", &size);
+					for (int i = 0; i < size + 1; i++)
+					{
+						uvsTemp.push_back(tmpFloat[i]);
+					}
+				}
+			}
+			else if ((line[0] == 'v') & (line[1] == 'n'))
+			{
+				if (line.size() > 2)
+				{
+					int size = 0;
+					tmpFloat = MC::parseString<float>(line.substr(3), " ", &size);
+					for (int i = 0; i < size + 1; i++)
+					{
+						normalsTemp.push_back(tmpFloat[i]);
+					}
+				}
+			}
+			if ((line[0] == 'f') & (line[1] == ' '))
+			{
+				int size = 0;
+				std::string* tempIndices = MC::parseString<std::string>(line.substr(2), " ", &size);
+				for (unsigned int i = 0; i < size + 1; i++)
+				{
+					int size2 = 0;
+					unsigned int* tmp = MC::parseString<unsigned int>(tempIndices[i], "/", &size2);
+					vIndicesVector.push_back(tmp[0]);      // Push_back
+					vIndicesVector.push_back(tmp[1]);      // Push_back
+					vIndicesVector.push_back(tmp[2]);      // Push_back
+				}
+			}
+		}
+	}
+
+	std::cout << "[INFO] PARSING DONE" << std::endl;
+	std::vector<glm::vec3> doneIndices;
+	float* vertices = (float*)calloc((size_t)vIndicesVector.size() * 4, sizeof(float)); assert(vertices);
+	unsigned int* indices = (unsigned int*)calloc((size_t)vIndicesVector.size() / 3, sizeof(unsigned int)); assert(indices);
+	for (unsigned long i = 0; i < vIndicesVector.size() / 3; i++)
+	{
+		vertices[8 * i + 0] = verticesVector[(vIndicesVector[3 * i] - 1) * 3 + 0];
+		vertices[8 * i + 1] = verticesVector[(vIndicesVector[3 * i] - 1) * 3 + 1];
+		vertices[8 * i + 2] = verticesVector[(vIndicesVector[3 * i] - 1) * 3 + 2];
+		vertices[8 * i + 3] = normalsTemp[(vIndicesVector[3 * i + 2] - 1) * 3 + 0];
+		vertices[8 * i + 4] = normalsTemp[(vIndicesVector[3 * i + 2] - 1) * 3 + 1];
+		vertices[8 * i + 5] = normalsTemp[(vIndicesVector[3 * i + 2] - 1) * 3 + 2];
+		vertices[8 * i + 6] = uvsTemp[(vIndicesVector[3 * i + 1] - 1) * 2 + 0];
+		vertices[8 * i + 7] = uvsTemp[(vIndicesVector[3 * i + 1] - 1) * 2 + 1];
+		indices[i] = i;
+	};
+	//std::cout << vertices[0] << " | " << vertices[1] << " | " << vertices[2] << std::endl; assert(std::cout);
+	//std::cout << uvs[0] << " | " << uvs[1] << " | " << uvs[2] << std::endl; assert(std::cout);
+	//std::cout << vIndices[0] << " | " << vIndices[1] << " | " << vIndices[2] << " | " << vIndices[3] << " | " << vIndices[4] << std::endl; assert(std::cout);
+	//std::cout << ss.str() << std::endl;
+	//MC::Object* object = new MC::Object(this, "../../../Shaders/basic.glsl");
+	scene->getLightObject()->getVertexBuffer()->setBuffer(vertices, vIndicesVector.size() * 4 * sizeof(float));
+
+	scene->getLightObject()->getIndexBuffer()->setBuffer(indices, vIndicesVector.size() / 3);
+
+	scene->getLightObject()->getVertexBufferLayout()->Push<float>(3);
+	scene->getLightObject()->getVertexBufferLayout()->Push<float>(3);
+	scene->getLightObject()->getVertexBufferLayout()->Push<float>(2);
+
+	scene->getLightObject()->getVertexArray()->bind();
+	scene->getLightObject()->getVertexArray()->addBuffer(*(scene->getLightObject()->getVertexBuffer()), *(scene->getLightObject()->getVertexBufferLayout()));
+	scene->getLightObject()->getVertexArray()->unbind();
 }

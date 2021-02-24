@@ -54,12 +54,14 @@ void main()
     vec3 result;
     if(u_twoSided==1)
     {
-        result = (vec3(0.1, 0.1, 0.1) + max(diffuse, diffuseinv)) * texture(t_albedo, UV).rgb;
+        //result = (vec3(0.1, 0.1, 0.1) + max(diffuse, diffuseinv)) * texture(t_albedo, UV).rgb;
+        result = (vec3(0.1, 0.1, 0.1) + max(diffuse, diffuseinv));
     }
     else
     {
         //result = (vec3(0.1, 0.1, 0.1) + diffuse) * texture(t_albedo, UV).rgb;
-        result = vec3(1.0, 0.0, 0.0);
+        //result = vec3(1.0, 0.0, 0.0);
+        result = (vec3(0.1, 0.1, 0.1) + diffuse);
     }
     color = vec4(result, 1.0);
 }

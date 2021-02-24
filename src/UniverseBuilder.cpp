@@ -33,6 +33,7 @@
 #include <MC/Graphics/VertexBufferLayout.hpp>
 #include <MC/Graphics/Shader.hpp>
 #include <MC/Core/DataManager.hpp>
+#include <MC/Core/Scene.hpp>
 
 #include <MC/Core/Block.hpp>
 
@@ -76,7 +77,7 @@ int main()
 
 	GLFWwindow* window = glfwCreateWindow(640, 640, "Test", NULL, NULL);
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	unsigned int glewInitResult;
@@ -123,15 +124,33 @@ int main()
 	dmanager.generateCubeVertexBuffer();
 	dmanager.loadBlocsList();
 
+	/*
+	std::string path;
+	path = dmanager.openFile("");
+	if (path.empty())
+	{
+		std::cout << "[ERROR] Can't access file" << std::endl;
+		return -1;
+	}
+	std::cout << "[INFO] path : " << path.c_str() << std::endl;
+	*/
+
+	MC::Scene scene(&dmanager);
+
+
+	/*
 	MC::Object obj(&dmanager, "../../../Shaders/basic.glsl");
+	dmanager.loadObj(&obj, "../../../ressources/3dmodels/Skull/skull2.obj");
+	scene.addObjectToScene(&obj);
+
 	MC::Object obj2(&dmanager, "../../../Shaders/light.glsl");
 	//dmanager.loadObj(&obj, "../../../ressources/3dmodels/face-mask.obj");
-	dmanager.loadObj(&obj, "../../../ressources/3dmodels/face-mask.obj");
+	dmanager.loadObj(&obj, path);
 	dmanager.loadObj(&obj2, "../../../ressources/3dmodels/light.obj");
 	//dmanager.loadObj(&obj, "../../../ressources/3dmodels/cube.obj");
-
+	*/
 	MC::ProceduralTexture ptexture(10, 10, 123456789, 4);
-	ptexture.sendToGl(8, 8);
+	ptexture.sendToGl(10, 10);
 
 	MC::Texture texture;
 	//texture.loadPNG("../../../ressources/textures/block/diamond_ore.png", 3, false);
@@ -147,6 +166,8 @@ int main()
 	//normalTexture.loadPNG("../../../ressources/3dmodels/Skull/normal.png", 3, false);
 	normalTexture.loadPNG("./ressources/3dmodels/Skull/normal.png", 3, false);
 	MC::Block dirt(&dmanager);
+
+
 
 	float sliderValue(0.5f);
 
@@ -174,12 +195,14 @@ int main()
 	glm::mat4 MVPmatrix;
 	while (!glfwWindowShouldClose(window))
 	{
+		/*
 		projection = glm::perspective(glm::radians(60.f), 1.0f, 0.1f, 100.0f);
 		view = glm::lookAt(glm::vec3(-4, -4, 1), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 
 		position = glm::translate(glm::mat4(1.f), glm::vec3(pos[0], pos[1], pos[2]));
 		model = position * glm::rotate(glm::mat4(1.f), glm::radians(rotation), glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.f), glm::vec3(0.5*scale, 0.5*scale, 0.5*scale));
 		MVPmatrix = projection * view * model;
+		*/
 
 		glfwPollEvents();
 
@@ -200,7 +223,27 @@ int main()
 		}
 		my_values[0] = 0.f;
 
-		ImGui::Begin("Stats", &my_tool_active);
+		ImGui::Begin("Stats", &my_tool_active, ImGuiWindowFlags_MenuBar);
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Open..", "Ctrl+O")) {
+					std::string path = dmanager.openFile("Obj file (*.obj)\0*.obj\0");
+					if (!path.empty())
+					{
+						scene.clearScene();
+						//MC::Object* obj = new MC::Object(&dmanager, "../../../Shaders/basic.glsl");
+						dmanager.loadObj(&scene, path);
+						//scene.addObjectToScene(obj);
+					}
+				};
+				if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ };
+				if (ImGui::MenuItem("Close", "Ctrl+W")) { /* Do stuff */ };
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 
 		ImGui::PlotHistogram("Frame Times", my_values, IM_ARRAYSIZE(my_values));
 
@@ -237,6 +280,7 @@ int main()
 		*/
 
 		//dirt.render(&MVPmatrix, &ptexture);
+		/*
 		obj.render(&MVPmatrix, &model, &view, lightpos, { &texture, &normalTexture });
 
 		position = glm::translate(glm::mat4(1.f), glm::vec3(lightpos[0], lightpos[1], lightpos[2]));
@@ -244,6 +288,17 @@ int main()
 		MVPmatrix = projection * view * model;
 
 		obj2.render(&MVPmatrix, true);
+		*/
+		MC::Object* lastObj;
+		bool exists = scene.getLastPushedObject(&lastObj);
+		if (exists)
+		{
+			lastObj->setTransform({ pos[0], pos[1], pos[2] }, { rotation, 0., 0. }, { scale, scale, scale });
+		}
+
+		scene.updateLightPos({ lightpos[0], lightpos[1], lightpos[2] });
+
+		scene.renderScene();
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

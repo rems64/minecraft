@@ -16,18 +16,22 @@
 #include <MC/Graphics/VertexArray.hpp>
 #include <MC/Graphics/Texture.hpp>
 
+
+#include <Windows.h>
 #include <MC/Core/Object.hpp>
+//#define GLFW_EXPOSE_NATIVE_WIN32
+//#include <GLFW/glfw3native.h>
 
 typedef enum class blocktype : int{
 	NONE = -1,
 	SOLID = 0,
-	TRANSPARENT = 1,
+	MC_TRANSPARENT = 1,
 	DYNAMIC = 2
 } BLOCKTYPE;
 
-
 namespace MC
 {
+	class Scene;
 	class DataManager
 	{
 	struct blockStruct
@@ -50,10 +54,13 @@ namespace MC
 		bool loadBlocsList();
 		bool storeBlocsList();
 
-		void loadObj(MC::Object *object, std::string path);
+		MC::Object* loadObj(MC::Scene* scene, std::string path);
+		void loadLight(MC::Scene* scene);
 		bool parseObj(MC::Object* object, const char* path);
 
 		MC::DataManager::blockStruct getBlock(unsigned int);
+
+		std::string openFile(const char* filter);
 	private:
 		MC::VertexBuffer m_cubeVertexBuffer;
 		MC::IndexBuffer m_cubeIndexBuffer;
